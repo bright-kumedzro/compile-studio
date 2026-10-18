@@ -1,33 +1,13 @@
 /*
- * Compile Studio timeline engine
- * Deterministic, scrubbable animation: every frame is a pure function of time t.
+ * Compile Studio browser player
+ * Play, pause, scrub and time readout for a page. Requires timeline-core.js first.
  * Usage:
  *   const tl = CompileTimeline.create({ duration, render, controls: { play, scrub, time } });
  *   render(t) is called with the current time in seconds.
+ * Not used in video renders: there, the renderer seeks render(t) directly.
  */
 (function (global) {
-  const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
-  const prog = (t, start, dur) => (dur <= 0 ? (t >= start ? 1 : 0) : clamp((t - start) / dur));
-  const ease = {
-    linear: x => x,
-    outCubic: x => 1 - Math.pow(1 - x, 3),
-    outQuart: x => 1 - Math.pow(1 - x, 4),
-    inCubic: x => x * x * x,
-    inOutCubic: x => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2)
-  };
-  // Fade + rise entrance driven by progress p (0..1)
-  const enter = (el, p, dist = 14, fn = ease.outCubic) => {
-    if (!el) return;
-    const e = fn(clamp(p));
-    el.style.opacity = e;
-    el.style.transform = `translateY(${(1 - e) * dist}px)`;
-  };
-  // Scene opacity with fade in/out; the last scene holds at the end
-  const sceneOpacity = (t, start, end, fade, isLast) => {
-    const fin = prog(t, start, fade);
-    const fout = isLast ? 1 : 1 - prog(t, end - fade, fade);
-    return Math.min(fin, fout);
-  };
+  const { clamp } = global.CompileTimeline;
 
   function create({ duration, render, controls = {}, reducedMotionAt = null }) {
     const { play: playBtn, scrub, time: timeEl } = controls;
@@ -60,5 +40,5 @@
     return { play, pause, seek, get time() { return t; } };
   }
 
-  global.CompileTimeline = { create, clamp, prog, ease, enter, sceneOpacity };
+  global.CompileTimeline.create = create;
 })(window);

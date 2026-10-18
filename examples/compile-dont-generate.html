@@ -165,11 +165,10 @@ input[type=range]{flex:1;accent-color:var(--signal)}
 
 <script>
 /*
- * Compile Studio timeline engine
- * Deterministic, scrubbable animation: every frame is a pure function of time t.
- * Usage:
- *   const tl = CompileTimeline.create({ duration, render, controls: { play, scrub, time } });
- *   render(t) is called with the current time in seconds.
+ * Compile Studio timeline core
+ * Pure helpers: every value is a function of time t. No clocks, no DOM events.
+ * Safe to inline anywhere frames are rendered by seeking (browser playback,
+ * HyperFrames, Remotion). The browser player in timeline.js builds on this.
  */
 (function (global) {
   const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
@@ -179,7 +178,28 @@ input[type=range]{flex:1;accent-color:var(--signal)}
     outCubic: x => 1 - Math.pow(1 - x, 3),
     outQuart: x => 1 - Math.pow(1 - x, 4),
     inCubic: x => x * x * x,
-    inOutCubic: x => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2)
+    inOutCubic: x => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2),
+    // CSS-style cubic-bezier, e.g. ease.bezier(0.4, 0, 0.2, 1) for a signature curve
+    bezier: (x1, y1, x2, y2) => {
+      const a = (p1, p2) => 1 - 3 * p2 + 3 * p1, b = (p1, p2) => 3 * p2 - 6 * p1, c = p1 => 3 * p1;
+      const at = (s, p1, p2) => ((a(p1, p2) * s + b(p1, p2)) * s + c(p1)) * s;
+      const slope = (s, p1, p2) => 3 * a(p1, p2) * s * s + 2 * b(p1, p2) * s + c(p1);
+      return x => {
+        if (x <= 0 || x >= 1) return clamp(x);
+        let s = x;
+        for (let i = 0; i < 8; i++) {            // Newton's method
+          const d = slope(s, x1, x2);
+          if (Math.abs(d) < 1e-6) break;
+          s -= (at(s, x1, x2) - x) / d;
+        }
+        let lo = 0, hi = 1;                       // bisection fallback for flat slopes
+        for (let i = 0; i < 20 && Math.abs(at(s, x1, x2) - x) > 1e-5; i++) {
+          s = (lo + hi) / 2;
+          at(s, x1, x2) < x ? (lo = s) : (hi = s);
+        }
+        return at(s, y1, y2);
+      };
+    }
   };
   // Fade + rise entrance driven by progress p (0..1)
   const enter = (el, p, dist = 14, fn = ease.outCubic) => {
@@ -194,6 +214,19 @@ input[type=range]{flex:1;accent-color:var(--signal)}
     const fout = isLast ? 1 : 1 - prog(t, end - fade, fade);
     return Math.min(fin, fout);
   };
+
+  global.CompileTimeline = Object.assign(global.CompileTimeline || {}, { clamp, prog, ease, enter, sceneOpacity });
+})(typeof window !== "undefined" ? window : globalThis);
+/*
+ * Compile Studio browser player
+ * Play, pause, scrub and time readout for a page. Requires timeline-core.js first.
+ * Usage:
+ *   const tl = CompileTimeline.create({ duration, render, controls: { play, scrub, time } });
+ *   render(t) is called with the current time in seconds.
+ * Not used in video renders: there, the renderer seeks render(t) directly.
+ */
+(function (global) {
+  const { clamp } = global.CompileTimeline;
 
   function create({ duration, render, controls = {}, reducedMotionAt = null }) {
     const { play: playBtn, scrub, time: timeEl } = controls;
@@ -226,9 +259,8 @@ input[type=range]{flex:1;accent-color:var(--signal)}
     return { play, pause, seek, get time() { return t; } };
   }
 
-  global.CompileTimeline = { create, clamp, prog, ease, enter, sceneOpacity };
+  global.CompileTimeline.create = create;
 })(window);
-
 </script>
 <script>
 // ── CONFIG: the single source of truth. Edit values here, never in render(). ──
