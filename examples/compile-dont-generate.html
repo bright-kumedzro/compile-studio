@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Compile Studio explainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E6ECF1; --surface:#F7F9FB; --ink:#14213D; --muted:#55627A;
+  --bar:#B9C6D3; --signal:#E8A400; --teal:#1F7A6E; --line:#C9D3DD;
+  color-scheme: light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1626; --surface:#16213A; --ink:#E6ECF1; --muted:#9AA8BF;
+    --bar:#33445F; --signal:#F2B705; --teal:#4FC1AE; --line:#2A3A55;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1626; --surface:#16213A; --ink:#E6ECF1; --muted:#9AA8BF;
+  --bar:#33445F; --signal:#F2B705; --teal:#4FC1AE; --line:#2A3A55;
+  color-scheme: dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
+.wrap{max-width:980px;margin:0 auto;padding:clamp(16px,4vw,40px)}
+h1{font-family:"Bricolage Grotesque","Helvetica Neue",Arial,sans-serif;font-weight:700;
+  font-size:clamp(1.3rem,3vw,1.75rem);margin:0 0 .25rem;letter-spacing:-.01em}
+.lede{color:var(--muted);margin:0 0 1.25rem;max-width:62ch}
+
+.stage{position:relative;container-type:inline-size;aspect-ratio:16/9;background:var(--surface);
+  border-radius:18px;overflow:hidden;border:1px solid var(--line)}
+@media (max-width:620px){.stage{aspect-ratio:4/5}}
+.scene{position:absolute;inset:0;padding:6cqw 7cqw;display:flex;flex-direction:column;justify-content:center;opacity:0}
+.display{font-family:"Bricolage Grotesque","Helvetica Neue",Arial,sans-serif;font-weight:800;letter-spacing:-.025em;line-height:1.02;margin:0}
+
+/* Scene 1 */
+#s1 .display{font-size:6.4cqw}
+#s1 .t1{color:var(--muted);font-weight:500}
+@container (max-width:620px){#s1 .display{font-size:10cqw}}
+
+/* Scene 2 */
+#s2{display:grid;grid-template-columns:1.4fr 1fr;grid-template-rows:auto 1fr;gap:2cqw 5cqw;align-content:center}
+#s2 .q{grid-column:1/-1;font-size:2.6cqw;margin:0;color:var(--muted)}
+.chart{display:flex;align-items:flex-end;gap:1.6cqw;height:24cqw;border-bottom:2px solid var(--line)}
+.bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}
+.bar i{display:block;width:100%;border-radius:6px 6px 0 0;background:var(--bar);transform-origin:bottom;transform:scaleY(0)}
+.bar span{font-size:1.5cqw;color:var(--muted);margin-top:.6cqw;position:absolute;bottom:-2.6cqw}
+.bar{position:relative}
+.hero{align-self:end}
+.hero .num{font-family:"Bricolage Grotesque","Helvetica Neue",Arial,sans-serif;font-weight:800;font-size:13cqw;line-height:.9;letter-spacing:-.04em}
+.hero p{font-size:1.9cqw;margin:.8cqw 0 0;max-width:24ch}
+.note{position:absolute;right:3cqw;bottom:2.4cqw;font-size:1.3cqw;color:var(--muted);margin:0}
+@container (max-width:620px){
+  #s2{grid-template-columns:1fr;gap:4cqw}
+  #s2 .q{font-size:4.6cqw}
+  .chart{height:40cqw}
+  .bar span{font-size:3cqw;bottom:-5cqw}
+  .hero .num{font-size:20cqw}
+  .hero p{font-size:3.8cqw}
+  .note{font-size:2.6cqw}
+}
+
+/* Scene 3 */
+.code{font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;font-size:2.3cqw;margin:0;
+  background:var(--bg);border-radius:12px;padding:2.4cqw 3cqw;overflow:hidden}
+.code div{opacity:0;padding:.3cqw .8cqw;border-radius:6px}
+.code .c{color:var(--muted)}
+.code .v{color:var(--teal);font-weight:500}
+.cap{font-size:2.3cqw;margin:2.4cqw 0 0;max-width:40ch}
+@container (max-width:620px){.code{font-size:3.4cqw}.cap{font-size:4.2cqw}}
+
+/* Scene 4 */
+#s4{align-items:center}
+.slide{width:72%;aspect-ratio:16/9;background:var(--bg);border-radius:10px;border:1px solid var(--line);
+  padding:3cqw;display:grid;grid-template-columns:1fr 1fr;gap:3cqw;align-items:end}
+.slide h2{grid-column:1/-1;align-self:start;margin:0;font-family:"Bricolage Grotesque","Helvetica Neue",Arial,sans-serif;font-size:2.4cqw;font-weight:700}
+.mini{display:flex;align-items:flex-end;gap:.8cqw;height:13cqw}
+.mini i{flex:1;background:var(--bar);border-radius:3px 3px 0 0}
+.mini i.hot{background:var(--signal)}
+.slide .num{font-family:"Bricolage Grotesque","Helvetica Neue",Arial,sans-serif;font-weight:800;font-size:7cqw;line-height:.9}
+#s4 .cap{text-align:center}
+@container (max-width:620px){.slide{width:100%}.slide h2{font-size:4cqw}.mini{height:22cqw}.slide .num{font-size:12cqw}}
+
+/* Scene 5 */
+#s5{align-items:flex-start}
+#s5 .display{font-size:7cqw}
+.flow{display:flex;align-items:center;gap:2cqw;margin-top:3cqw;font-size:2.6cqw;font-weight:500}
+.flow span{opacity:0}
+.flow b{display:block;width:5cqw;height:2px;background:var(--signal);transform-origin:left;transform:scaleX(0)}
+@container (max-width:620px){#s5 .display{font-size:11cqw}.flow{font-size:5cqw}.flow b{width:8cqw}}
+
+/* Controls */
+.controls{display:flex;align-items:center;gap:12px;margin-top:14px}
+button{font:500 .95rem "IBM Plex Sans",system-ui,sans-serif;color:var(--surface);background:var(--ink);
+  border:0;border-radius:999px;padding:.55rem 1.1rem;cursor:pointer;min-width:5.5rem}
+button:focus-visible,input:focus-visible{outline:3px solid var(--signal);outline-offset:2px}
+input[type=range]{flex:1;accent-color:var(--signal)}
+.time{font-variant-numeric:tabular-nums;color:var(--muted);font-size:.9rem;min-width:4.5ch;text-align:right}
+.rooms{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;list-style:none;padding:0;margin:12px 0 0}
+.rooms li{border-top:3px solid var(--line);padding-top:6px;color:var(--muted);font-size:.9rem;transition:border-color .2s,color .2s}
+.rooms li.on{border-color:var(--signal);color:var(--ink)}
+.direct{margin-top:22px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);max-width:62ch}
+.direct strong{color:var(--ink);font-weight:500}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <h1 id="pageTitle"></h1>
+  <p class="lede" id="lede"></p>
+
+  <div class="stage" role="img" id="stage">
+    <section class="scene" id="s1">
+      <p class="display t1" id="title1"></p>
+      <p class="display t2" id="title2"></p>
+    </section>
+
+    <section class="scene" id="s2">
+      <p class="q" id="question"></p>
+      <div class="chart" id="chart"></div>
+      <div class="hero">
+        <div class="num"><span id="count">0</span>%</div>
+        <p id="heroLabel"></p>
+      </div>
+      <p class="note" id="source"></p>
+    </section>
+
+    <section class="scene" id="s3">
+      <pre class="code" id="code"></pre>
+      <p class="cap" id="motionCap"></p>
+    </section>
+
+    <section class="scene" id="s4">
+      <div class="slide">
+        <h2 id="slideTitle"></h2>
+        <div class="mini" id="mini"></div>
+        <div class="num" id="slideNum"></div>
+      </div>
+      <p class="cap" id="editCap"></p>
+    </section>
+
+    <section class="scene" id="s5">
+      <p class="display" id="closer"></p>
+      <div class="flow"><span>Data</span><b></b><span>Motion</span><b></b><span>Edit</span></div>
+    </section>
+  </div>
+
+  <div class="controls">
+    <button id="play" type="button">Pause</button>
+    <input id="scrub" type="range" min="0" max="1000" value="0" aria-label="Timeline">
+    <span class="time" id="time">0.0s</span>
+  </div>
+  <ol class="rooms" id="rooms"><li>Data room</li><li>Motion room</li><li>Edit room</li></ol>
+
+</main>
+
+<script>
+/*
+ * Compile Studio timeline engine
+ * Deterministic, scrubbable animation: every frame is a pure function of time t.
+ * Usage:
+ *   const tl = CompileTimeline.create({ duration, render, controls: { play, scrub, time } });
+ *   render(t) is called with the current time in seconds.
+ */
+(function (global) {
+  const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+  const prog = (t, start, dur) => (dur <= 0 ? (t >= start ? 1 : 0) : clamp((t - start) / dur));
+  const ease = {
+    linear: x => x,
+    outCubic: x => 1 - Math.pow(1 - x, 3),
+    outQuart: x => 1 - Math.pow(1 - x, 4),
+    inCubic: x => x * x * x,
+    inOutCubic: x => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2)
+  };
+  // Fade + rise entrance driven by progress p (0..1)
+  const enter = (el, p, dist = 14, fn = ease.outCubic) => {
+    if (!el) return;
+    const e = fn(clamp(p));
+    el.style.opacity = e;
+    el.style.transform = `translateY(${(1 - e) * dist}px)`;
+  };
+  // Scene opacity with fade in/out; the last scene holds at the end
+  const sceneOpacity = (t, start, end, fade, isLast) => {
+    const fin = prog(t, start, fade);
+    const fout = isLast ? 1 : 1 - prog(t, end - fade, fade);
+    return Math.min(fin, fout);
+  };
+
+  function create({ duration, render, controls = {}, reducedMotionAt = null }) {
+    const { play: playBtn, scrub, time: timeEl } = controls;
+    let t = 0, playing = false, last = null;
+
+    const draw = () => {
+      render(t);
+      if (scrub) scrub.value = Math.round((t / duration) * 1000);
+      if (timeEl) timeEl.textContent = t.toFixed(1) + "s";
+    };
+    const tick = now => {
+      if (!playing) { last = null; return; }
+      if (last !== null) t += (now - last) / 1000;
+      last = now;
+      if (t >= duration) { t = duration; playing = false; if (playBtn) playBtn.textContent = "Replay"; draw(); return; }
+      draw();
+      requestAnimationFrame(tick);
+    };
+    const play = () => { if (t >= duration) t = 0; playing = true; last = null; if (playBtn) playBtn.textContent = "Pause"; requestAnimationFrame(tick); };
+    const pause = () => { playing = false; if (playBtn) playBtn.textContent = "Play"; };
+    const seek = s => { t = clamp(s, 0, duration); draw(); };
+
+    if (playBtn) playBtn.addEventListener("click", () => (playing ? pause() : play()));
+    if (scrub) scrub.addEventListener("input", () => { pause(); seek((scrub.value / 1000) * duration); });
+
+    const reduce = global.matchMedia && global.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) { seek(reducedMotionAt ?? duration); pause(); }
+    else { seek(0); play(); }
+
+    return { play, pause, seek, get time() { return t; } };
+  }
+
+  global.CompileTimeline = { create, clamp, prog, ease, enter, sceneOpacity };
+})(window);
+
+</script>
+<script>
+// ── CONFIG: the single source of truth. Edit values here, never in render(). ──
+const CONFIG = {
+  pageTitle: "Compile, don’t generate",
+  lede: "A short explainer written entirely as code. Every number, colour and timing lives in one config object.",
+  ariaLabel: "Animated explainer: a question becomes a chart, the chart becomes code-driven motion, and the clip lands in a slide.",
+  title: ["You’re not generating video.", "You’re compiling it."],
+  question: "Which stations run empty before 9am on weekdays?",
+  labels: ["Elm","Dock","Mill","Quay","Park","Ford"],
+  values: [22, 31, 27, 38, 19, 24],
+  unit: "%",
+  highlight: 3,
+  heroLabel: "of weekday mornings at {label} station end empty",
+  source: "Sample data",
+  motionCaption: "Every value on screen is a line you can change.",
+  slideTitle: "Morning availability, weekdays",
+  editCaption: "The clip drops into the deck. Nothing to re-export.",
+  closer: "Compile, don’t generate.",
+  flow: ["Data","Motion","Edit"],
+  timing: {
+    drawOn: 0.9,          // seconds per bar
+    stagger: 0.15,        // seconds between bars
+    countUp: 1.2,         // seconds for hero number
+    fade: 0.4,            // scene cross-fade
+    scenes: [[0,3],[3,8.5],[8.5,12],[12,15],[15,17]]  // title, data, motion, edit, close
+  }
+};
+</script>
+<script>
+const { prog, ease, enter, sceneOpacity } = CompileTimeline;
+const C = CONFIG, T = C.timing;
+const TOTAL = T.scenes[T.scenes.length-1][1];
+const hero = C.values[C.highlight], heroName = C.labels[C.highlight];
+const $ = id => document.getElementById(id);
+
+// Copy
+document.title = C.pageTitle;
+$("pageTitle").textContent = C.pageTitle; $("lede").textContent = C.lede;
+$("stage").setAttribute("aria-label", C.ariaLabel);
+$("title1").textContent = C.title[0]; $("title2").textContent = C.title[1];
+$("question").textContent = C.question; $("source").textContent = C.source;
+$("heroLabel").textContent = C.heroLabel.replace("{label}", heroName);
+$("motionCap").textContent = C.motionCaption; $("slideTitle").textContent = C.slideTitle;
+$("editCap").textContent = C.editCaption; $("closer").textContent = C.closer;
+document.querySelectorAll(".flow span").forEach((s,i)=>s.textContent=C.flow[i]);
+document.querySelectorAll("#rooms li").forEach((s,i)=>s.textContent=C.flow[i]+" room");
+$("slideNum").textContent = hero + C.unit;
+document.querySelector(".hero .num").lastChild.textContent = C.unit;
+
+// Build chart, mini chart and code card from CONFIG
+const max = Math.max(...C.values), chart = $("chart"), mini = $("mini"), code = $("code");
+C.labels.forEach((s,i)=>{
+  const b=document.createElement("div");b.className="bar";
+  b.innerHTML=`<i style="height:${C.values[i]/max*100}%"></i><span></span>`;
+  b.querySelector("span").textContent=s; chart.appendChild(b);
+  const m=document.createElement("i");m.style.height=(C.values[i]/max*100)+"%";
+  if(i===C.highlight)m.className="hot"; mini.appendChild(m);
+});
+[`<span class="c">// the number the video is about</span>`,
+ `const hero = <span class="v">${hero}</span>;`,
+ `const drawOn = <span class="v">${T.drawOn}</span>;   <span class="c">// seconds per bar</span>`,
+ `const ease = <span class="v">"outQuart"</span>;`,
+ `highlight(<span class="v">"${heroName}"</span>);`
+].forEach(l=>{const d=document.createElement("div");d.innerHTML=l;code.appendChild(d)});
+
+const scenes=[...document.querySelectorAll(".scene")], bars=[...chart.querySelectorAll(".bar i")];
+const lines=[...code.children], flowSpans=[...document.querySelectorAll(".flow span")];
+const flowRules=[...document.querySelectorAll(".flow b")], rooms=[...document.querySelectorAll("#rooms li")];
+const landed = 0.6 + (bars.length-1)*T.stagger + T.drawOn;
+
+function render(t){
+  T.scenes.forEach(([a,b],i)=>{
+    const last=i===T.scenes.length-1;
+    scenes[i].style.opacity=sceneOpacity(t,a,b,T.fade,last);
+    scenes[i].style.visibility=(t>=a&&(t<b||last))?"visible":"hidden";
+  });
+  let u=t-T.scenes[0][0];
+  enter(scenes[0].querySelector(".t1"),prog(u,0.2,0.7));
+  enter(scenes[0].querySelector(".t2"),prog(u,0.9,0.7));
+  u=t-T.scenes[1][0];
+  enter($("question"),prog(u,0.1,0.5));
+  bars.forEach((b,i)=>{b.style.transform=`scaleY(${ease.outQuart(prog(u,0.6+i*T.stagger,T.drawOn))})`});
+  bars[C.highlight].style.background=u>landed?"var(--signal)":"var(--bar)";
+  $("count").textContent=Math.round(ease.outCubic(prog(u,landed,T.countUp))*hero);
+  enter(scenes[1].querySelector(".hero"),prog(u,landed,0.5));
+  u=t-T.scenes[2][0];
+  lines.forEach((l,i)=>{l.style.opacity=ease.outCubic(prog(u,0.2+i*0.25,0.4))});
+  lines[1].style.background=u>1.8?"color-mix(in srgb,var(--signal) 28%,transparent)":"transparent";
+  enter($("motionCap"),prog(u,1.9,0.5));
+  u=t-T.scenes[3][0];
+  const sp=ease.outCubic(prog(u,0,0.7)), slide=scenes[3].querySelector(".slide");
+  slide.style.transform=`scale(${0.9+0.1*sp})`;slide.style.opacity=sp;
+  enter($("editCap"),prog(u,0.8,0.5));
+  u=t-T.scenes[4][0];
+  enter($("closer"),prog(u,0.1,0.6));
+  flowSpans.forEach((s,i)=>{s.style.opacity=ease.outCubic(prog(u,0.6+i*0.35,0.4))});
+  flowRules.forEach((r,i)=>{r.style.transform=`scaleX(${ease.outCubic(prog(u,0.8+i*0.35,0.35))})`});
+  const room=t<T.scenes[1][0]?-1:t<T.scenes[2][0]?0:t<T.scenes[3][0]?1:t<T.scenes[4][0]?2:-1;
+  rooms.forEach((r,i)=>r.classList.toggle("on",i===room));
+}
+
+CompileTimeline.create({
+  duration: TOTAL, render,
+  controls: { play: $("play"), scrub: $("scrub"), time: $("time") },
+  reducedMotionAt: T.scenes[1][0] + landed + T.countUp
+});
+</script>
+</body>
+</html>
